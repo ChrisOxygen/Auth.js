@@ -22,7 +22,7 @@ import { Separator } from "./ui/separator";
 import { LoadingSpinner } from "./LoadSpinner";
 import { signInUser, signUp } from "@/actions/user.action";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 const signUpDefaultValues = {
   firstName: "",
@@ -74,7 +74,6 @@ const authFormSchema = (formType: "sign in" | "sign up") => {
 };
 
 function AuthForm({ formType }: AuthFormProps) {
-  const searchParams = useSearchParams();
   const router = useRouter();
   const { mutate, isPending } = useMutation({
     mutationFn: (values: SignUpDetails | SignInDetails) => {
@@ -93,7 +92,6 @@ function AuthForm({ formType }: AuthFormProps) {
     },
     onError: (error) => {
       // An error happened!
-      console.log("searchParams", searchParams.get("code"), error);
 
       if (error.message === "Invalid email or password") {
         form.setError(

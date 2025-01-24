@@ -38,6 +38,12 @@ async function AuthBox() {
           >
             Sign in
           </Link>
+          <Link
+            href="/sign-up"
+            className="text-white  rounded-sm flex items-center gap-1 font-poppins py-1 bg-white/15 px-3 font-thin"
+          >
+            Creat an account
+          </Link>
         </>
       )}
     </div>

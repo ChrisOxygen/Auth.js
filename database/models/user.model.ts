@@ -49,15 +49,6 @@ const schema = new Schema<BaseUserDoc>(
   },
   { timestamps: true }
 );
-// this helps to get typscript suggestions when creating a new user
-export const createUser = async (userInfo: UserDoc) => {
-  try {
-    return await UserModel.create(userInfo);
-  } catch (error) {
-    console.log("createUser error", error);
-    throw error;
-  }
-};
 
 const UserModel = models?.User || model("User", schema);
 

@@ -3,10 +3,71 @@
 import { connectToDatabase } from "@/database";
 import UserModel from "@/database/models/user.model";
 
+import { v4 as uuidv4 } from "uuid";
+
 import bcrypt from "bcryptjs";
 
 import { handleServerErrors } from "@/lib/utils";
-import { signIn } from "@/auth";
+import { auth, signIn, unstable_update } from "@/auth";
+import verificationCodeModel from "@/database/models/verificationCode.model";
+
+export const generateAndSendEmailVerificationCode = async (
+  userId: string
+): Promise<{ succes: boolean } | null | undefined> => {
+  try {
+    connectToDatabase();
+
+    const newUser = await UserModel.findById(userId);
+
+    if (!newUser) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "User not found!";
+      error.status = 404;
+      throw error;
+    }
+
+    const vCode = uuidv4();
+
+    const hashedVcode = await bcrypt.hash(vCode, 12);
+
+    await verificationCodeModel.deleteOne({ userId });
+
+    const newVcode = await verificationCodeModel.create({
+      userId,
+      hashedCode: hashedVcode,
+    });
+
+    if (!newVcode) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Verification code creation failed!";
+      error.status = 500;
+      throw error;
+    }
+
+    const verificationLink = `${process.env.NEXTAUTH_URL}/verify-email?code=${vCode}`;
+
+    const emailResponse = await fetch(
+      `${process.env.NEXTAUTH_URL}/api/verify-email`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: newUser.name,
+          verificationLink: verificationLink,
+          email: newUser.email,
+        }),
+      }
+    );
+
+    return newVcode && emailResponse.ok
+      ? JSON.parse(JSON.stringify({ success: true }))
+      : null;
+  } catch (error) {
+    handleServerErrors(error as ErrorWithMessageAndStatus);
+  }
+};
 
 export const signUp = async (signupDetails: SignUpDetails) => {
   const { firstName, lastName, email, password } = signupDetails;
@@ -51,6 +112,19 @@ export const signUp = async (signupDetails: SignUpDetails) => {
 
     console.log("New user created: ", newUser);
 
+    // create verification code
+
+    const newVcode = await generateAndSendEmailVerificationCode(
+      newUser._id.toString()
+    );
+
+    if (!newVcode) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Verification code creation failed!";
+      error.status = 500;
+      throw error;
+    }
+
     return newUser ? JSON.parse(JSON.stringify(newUser)) : null;
 
     // return redirect("/sign-in");
@@ -72,4 +146,83 @@ export const signInUser = async (data: SignInDetails) => {
   }
 
   console.log("signedIn", signedIn);
+};
+
+export const verifyUserEmail = async (code: string, userId: string) => {
+  try {
+    connectToDatabase();
+    const verificationCode = await verificationCodeModel.findOne({
+      userId,
+    });
+
+    if (!verificationCode) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Invalid verification code!";
+      error.status = 400;
+      throw error;
+    }
+
+    const isMatch = await bcrypt.compare(code, verificationCode.hashedCode);
+
+    if (!isMatch) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Invalid verification code!";
+      error.status = 400;
+      throw error;
+    }
+
+    const timeOut =
+      new Date().getTime() - new Date(verificationCode.createdAt).getTime() >
+      1000 * 60 * 10;
+
+    if (timeOut) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Verification code expired!";
+      error.status = 400;
+      throw error;
+    }
+
+    await verificationCodeModel.deleteOne({
+      userId,
+    });
+
+    const user = await UserModel.findByIdAndUpdate(userId, {
+      verified: true,
+    });
+
+    if (!user) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "User not found!";
+      error.status = 404;
+      throw error;
+    }
+
+    console.log("user", user);
+
+    const session = await auth();
+
+    if (!session) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Session not found!";
+      error.status = 404;
+      throw error;
+    }
+
+    console.log("session", session);
+
+    const updatedSession = await unstable_update({
+      user: { ...session.user, isVerified: true },
+    });
+
+    if (!updatedSession) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Session update failed!";
+      error.status = 500;
+      throw error;
+    }
+
+    return JSON.parse(JSON.stringify({ success: true }));
+  } catch (error) {
+    handleServerErrors(error as ErrorWithMessageAndStatus);
+  }
 };

@@ -1,34 +1,47 @@
+import { auth } from "@/auth";
 import NavBar from "@/components/NavBar";
+import { Button } from "@/components/ui/button";
 
-export default function Home() {
+export default async function Home() {
+  const session = await auth();
+
+  const isLoggedIn = session !== null;
+
+  const isVerified = session?.user?.isVerified;
+
+  console.log("isVerified", isVerified);
+
+  //grid h-full grid-rows-[60px,1fr]
   return (
-    <div
-      className=" grid h-full p-5 "
-      style={{
-        backgroundImage: "url('/desert.jpg')",
-        backgroundSize: "cover",
-        backgroundPosition: "center",
-      }}
-    >
-      <div className="flex  flex-col justify-between w-full">
-        {/* <nav className="flex text-white items-center justify-between">
-          <h3 className="font-bold text-xl uppercase">Auth.js</h3>
-          <Link
-            href="/"
-            className="text-white text-sm rounded-xl flex items-center gap-1 font-poppins py-1 bg-white/15 px-3 font-thin"
-          >
-            <span className=" grid place-items-center">Back to home</span>
-            <span className=" grid place-items-center">
-              <FiArrowRight />
-            </span>
-          </Link>
-        </nav> */}
-        <NavBar />
-        <div className=" w-full flex flex-col gap-5 items-center mb-2  ">
-          <h4 className=" text-3xl capitalize text-center max-w-[400px] font-thin text-white">
-            Auth.js , formerly <br /> known as NextAuth.js.
-          </h4>
-          <span className="h-[2px] w-[150px] bg-white rounded-lg"></span>
+    <div className="flex flex-col w-full h-screen">
+      {isLoggedIn && !isVerified && (
+        <div className=" bg-red-500 grid p-2 place-items-center gap-2">
+          <span className=" flex font-poppins  items-center gap-2">
+            Click the link in your image to verify your accout, or
+            <form action="" className="">
+              <Button className=" font-semibold uppercase bg-red-700 px-6 ml-3">
+                Resend Verification Email
+              </Button>
+            </form>
+          </span>
+        </div>
+      )}
+      <div
+        className=" grid h-full p-5 "
+        style={{
+          backgroundImage: "url('/desert.jpg')",
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      >
+        <div className="flex  flex-col justify-between w-full">
+          <NavBar />
+          <div className=" w-full flex flex-col gap-5 items-center mb-2  ">
+            <h4 className=" text-3xl capitalize text-center max-w-[400px] font-thin text-white">
+              Auth.js , formerly <br /> known as NextAuth.js.
+            </h4>
+            <span className="h-[2px] w-[150px] bg-white rounded-lg"></span>
+          </div>
         </div>
       </div>
     </div>

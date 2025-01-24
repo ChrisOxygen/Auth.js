@@ -15,3 +15,11 @@ declare type ErrorWithMessageAndStatus = {
   status: number;
   field?: string;
 } & Error;
+
+declare interface SessionUserProfile {
+  id: string;
+  name: string;
+  avatar: string;
+  email: string;
+  isVerified: boolean;
+}

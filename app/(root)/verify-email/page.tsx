@@ -17,7 +17,7 @@ async function VerificationPage({
 
   console.log("paramsRes: ", code);
   return (
-    <main className="w-full h-screen grid  place-items-center">
+    <main className="w-full h-screen grid  place-items-center px-5">
       <VerificationResponse
         isVerified={isVerified!}
         name={session?.user?.name}

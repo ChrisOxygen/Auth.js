@@ -172,7 +172,7 @@ export const verifyUserEmail = async (code: string, userId: string) => {
     }
 
     const timeOut =
-      new Date().getTime() - new Date(verificationCode.createdAt).getTime() >
+      new Date().getTime() - new Date(verificationCode.createdAt!).getTime() >
       1000 * 60 * 10;
 
     if (timeOut) {

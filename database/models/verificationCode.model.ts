@@ -4,6 +4,8 @@ interface BaseVerificationCodeDoc {
   _id?: ObjectId;
   userId: string;
   hashedCode: string;
+  createdAt?: string;
+  updateAt?: string;
 }
 
 const schema = new Schema<BaseVerificationCodeDoc>(

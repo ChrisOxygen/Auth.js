@@ -2,7 +2,7 @@ import { Toaster } from "@/components/ui/sonner";
 
 function layout({ children }: { children: React.ReactNode }) {
   return (
-    <main className=" flex flex-col w-screen bg-slate-950 h-screen">
+    <main className=" flex flex-col w-screen bg-slate-950 h-svh">
       {children}
       <Toaster />
     </main>

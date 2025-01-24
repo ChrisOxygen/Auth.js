@@ -155,7 +155,7 @@ function AuthForm({ formType }: AuthFormProps) {
   return (
     <div className="bg-[#2C2638] w-full h-screen flex-col sm:flex-row  p-5 flex gap-5">
       <div
-        className=" min-w-[400px] lg:basis-1/2 shrink grid h-[260px] sm:h-full rounded-2xl  p-5  "
+        className=" lg:basis-1/2 shrink grid h-[260px] sm:h-full rounded-2xl  p-5  "
         style={{
           backgroundImage: "url('/desert.jpg')",
           backgroundSize: "cover",
@@ -184,7 +184,7 @@ function AuthForm({ formType }: AuthFormProps) {
         </div>
       </div>
       <div className=" w-full lg:w-0  lg:basis-1/2 shrink grid place-items-center">
-        <div className=" md:px-[50px] px-[20px]  lg:px-[100px] mx-auto w-full flex flex-col gap-5">
+        <div className=" md:px-[50px] px-0  lg:px-[100px] mx-auto w-full flex flex-col gap-5">
           <h2 className="text-white text-4xl font-thin">
             {formType === "sign in" ? "Sign in" : "Create account"}
           </h2>

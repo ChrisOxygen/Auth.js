@@ -22,7 +22,11 @@ import { Separator } from "./ui/separator";
 import { LoadingSpinner } from "./LoadSpinner";
 import { signInUser, signUp } from "@/actions/user.action";
 import { useMutation } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+// import { signIn } from "next-auth/react";
+// import { signIn } from "@/auth";
+import { toast } from "sonner";
+import ToastBox from "./ToastBox";
 
 const signUpDefaultValues = {
   firstName: "",
@@ -75,19 +79,59 @@ const authFormSchema = (formType: "sign in" | "sign up") => {
 
 function AuthForm({ formType }: AuthFormProps) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutate, isPending } = useMutation({
     mutationFn: (values: SignUpDetails | SignInDetails) => {
       if (formType === "sign up") {
         return signUp(values as SignUpDetails);
       }
+      // return signIn("credentials", {
+      //   email: (values as SignInDetails).email,
+      //   password: (values as SignInDetails).password,
+      // });
       return signInUser(values as SignInDetails);
     },
-    onSuccess: () => {
+    onSuccess: (data) => {
       if (formType === "sign up") {
-        router.push("/sign-in");
+        console.log("Account created!", data);
+        toast.custom(
+          (t) => {
+            const closeToast = () => {
+              toast.dismiss(t);
+              router.push("/sign-in");
+            };
+            return (
+              <ToastBox
+                variant="success"
+                title="Account created!"
+                handleClose={closeToast}
+                message="Your account has been created successfully. you will be redirected to the login page."
+              />
+            );
+          },
+          {
+            unstyled: true,
+            style: {
+              backgroundColor: "transparent",
+            },
+            onAutoClose: (t) => {
+              toast.dismiss(t.id);
+              router.push("/sign-in");
+            },
+
+            classNames: {
+              toast: " bg-red-500 w-full",
+            },
+          }
+        );
       }
       if (formType === "sign in") {
-        router.push("/");
+        const verifyPage = searchParams.get("from") as string;
+        if (verifyPage) {
+          router.push(verifyPage);
+        } else {
+          router.push("/");
+        }
       }
     },
     onError: (error) => {

@@ -1,29 +1,21 @@
 "use client";
-
-import React from "react";
 import { Button } from "./ui/button";
+import { toast } from "sonner";
+import ToastBox from "./ToastBox";
 import { generateAndSendEmailVerificationCode } from "@/actions/user.action";
 import { useMutation } from "@tanstack/react-query";
-import { toast } from "sonner";
+import { useSession } from "next-auth/react";
 
-import ToastBox from "./ToastBox";
-import { redirect } from "next/navigation";
-
-function RegenerateVerificationLink({
-  userId,
-  errMsg,
-}: {
-  userId: string;
-  errMsg?: string;
-}) {
+function NotificationBar() {
+  const { data: session } = useSession();
   const { mutate } = useMutation({
-    mutationFn: () => generateAndSendEmailVerificationCode(userId),
+    mutationFn: () =>
+      generateAndSendEmailVerificationCode(session?.user?.id as string),
     onSuccess: () => {
       toast.custom(
         (t) => {
           const closeToast = () => {
             toast.dismiss(t);
-            redirect("/");
           };
           return (
             <ToastBox
@@ -41,7 +33,6 @@ function RegenerateVerificationLink({
           },
           onAutoClose: (t) => {
             toast.dismiss(t.id);
-            redirect("/");
           },
 
           classNames: {
@@ -57,17 +48,15 @@ function RegenerateVerificationLink({
     },
   });
   return (
-    <div className="flex flex-col items-center justify-center gap-5">
-      <p className=" font-poppins text-lg text-white">
-        {errMsg?.split(" ").slice(2).join(" ") ||
-          "Oops! something went wrong. regenerate Verification link."}
-      </p>
+    <div className=" bg-red-500 flex items-center md:flex-row flex-col justify-center w-full p-2  gap-2">
+      <span className=" flex font-poppins  items-center gap-2">
+        Click the link in your email to verify your accout, or
+      </span>
       <Button
         onClick={() => {
-          // resend verification email
           mutate();
         }}
-        className="bg-[#6D54B5] hover:bg-[#6132ec] uppercase rounded text-white  font-semibold  text-center px-6 py-5  "
+        className=" font-semibold uppercase bg-red-700 hover:bg-red-900 px-6 ml-3"
       >
         Resend Verification Email
       </Button>
@@ -75,4 +64,4 @@ function RegenerateVerificationLink({
   );
 }
 
-export default RegenerateVerificationLink;
+export default NotificationBar;

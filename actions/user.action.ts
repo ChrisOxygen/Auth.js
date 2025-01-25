@@ -10,6 +10,8 @@ import bcrypt from "bcryptjs";
 import { handleServerErrors } from "@/lib/utils";
 import { auth, signIn, unstable_update } from "@/auth";
 import verificationCodeModel from "@/database/models/verificationCode.model";
+import { revalidatePath } from "next/cache";
+import PasswordCodeModel from "@/database/models/passwordCode.model";
 
 export const generateAndSendEmailVerificationCode = async (
   userId: string
@@ -135,17 +137,40 @@ export const signUp = async (signupDetails: SignUpDetails) => {
 
 export const signInUser = async (data: SignInDetails) => {
   // remember to import the signIn function not from next-auth/react but from "@/auth"
-  const signedIn = await signIn("credentials", {
-    email: data.email,
-    password: data.password,
-    redirect: false,
-  });
 
-  if (signedIn && signedIn.error) {
-    throw new Error(signedIn.code);
+  console.log("data", data);
+
+  // const signedIn = await signIn("credentials", {
+  //   email: data.email,
+  //   password: data.password,
+  //   redirect: false,
+  // });
+
+  // if (signedIn && signedIn.error) {
+  //   throw new Error(signedIn.code);
+  // }
+
+  // console.log("signedIn", signedIn);
+
+  try {
+    const signedIn = await signIn("credentials", {
+      email: data.email,
+      password: data.password,
+      redirect: false,
+    });
+
+    console.log("signedIn", signedIn);
+
+    if (signedIn && signedIn.error) {
+      throw new Error(signedIn.code);
+    }
+  } catch (err) {
+    const error = new Error() as ErrorWithMessageAndStatus;
+    error.message = "Invalid email or password!";
+    error.status = 400;
+
+    handleServerErrors(error as ErrorWithMessageAndStatus);
   }
-
-  console.log("signedIn", signedIn);
 };
 
 export const verifyUserEmail = async (code: string, userId: string) => {
@@ -221,7 +246,65 @@ export const verifyUserEmail = async (code: string, userId: string) => {
       throw error;
     }
 
+    revalidatePath("/");
+
     return JSON.parse(JSON.stringify({ success: true }));
+  } catch (error) {
+    handleServerErrors(error as ErrorWithMessageAndStatus);
+  }
+};
+
+export const generateAndSendPasswordResetCode = async (email: string) => {
+  try {
+    connectToDatabase();
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "User not found!";
+      error.status = 404;
+      throw error;
+    }
+
+    const vCode = uuidv4();
+
+    const hashedVcode = await bcrypt.hash(vCode, 12);
+
+    await PasswordCodeModel.deleteOne({ userId: user._id.toString() });
+
+    const newVcode = await PasswordCodeModel.create({
+      userId: user._id.toString(),
+      hashedCode: hashedVcode,
+    });
+
+    if (!newVcode) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Password reset code creation failed!";
+      error.status = 500;
+      throw error;
+    }
+
+    const passwordResetLink = `${process.env.NEXTAUTH_URL}/reset-password?code=${vCode}`;
+
+    const emailResponse = await fetch(
+      `${process.env.NEXTAUTH_URL}/api/reset-password`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: user.name,
+          passwordResetLink: passwordResetLink,
+          email: user.email,
+        }),
+      }
+    );
+
+    return newVcode && emailResponse.ok
+      ? JSON.parse(JSON.stringify({ success: true }))
+      : null;
   } catch (error) {
     handleServerErrors(error as ErrorWithMessageAndStatus);
   }

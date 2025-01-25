@@ -1,6 +1,6 @@
 import { auth } from "@/auth";
 import NavBar from "@/components/NavBar";
-import { Button } from "@/components/ui/button";
+import NotificationBar from "@/components/NotificationBar";
 
 export default async function Home() {
   const session = await auth();
@@ -14,18 +14,7 @@ export default async function Home() {
   //grid h-full grid-rows-[60px,1fr]
   return (
     <div className="flex flex-col w-full h-screen">
-      {isLoggedIn && !isVerified && (
-        <div className=" bg-red-500 grid p-2 place-items-center gap-2">
-          <span className=" flex font-poppins  items-center gap-2">
-            Click the link in your image to verify your accout, or
-            <form action="" className="">
-              <Button className=" font-semibold uppercase bg-red-700 px-6 ml-3">
-                Resend Verification Email
-              </Button>
-            </form>
-          </span>
-        </div>
-      )}
+      {isLoggedIn && !isVerified && <NotificationBar />}
       <div
         className=" grid h-full p-5 "
         style={{

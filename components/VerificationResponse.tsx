@@ -8,6 +8,7 @@ import { Button } from "./ui/button";
 import { toast } from "sonner";
 import { redirect } from "next/navigation";
 import RegenerateVerificationLink from "./RegenerateVerificationLink";
+import ToastBox from "./ToastBox";
 
 type VerificationResponseProps = {
   isVerified: boolean;
@@ -25,17 +26,36 @@ function VerificationResponse({
   const { mutate, isPending, isError, isSuccess, error } = useMutation({
     mutationFn: () => verifyUserEmail(verificationCode, userId),
     onSuccess: () => {
-      toast("email verified", {
-        cancel: {
-          label: "Cancel",
-          onClick: () => redirect("/"),
+      toast.custom(
+        (t) => {
+          const closeToast = () => {
+            toast.dismiss(t);
+            redirect("/");
+          };
+          return (
+            <ToastBox
+              variant="success"
+              title="Email verified!"
+              handleClose={closeToast}
+              message=" Your email has been verified, you can now enjoy all the features of our platform"
+            />
+          );
         },
+        {
+          unstyled: true,
+          style: {
+            backgroundColor: "transparent",
+          },
+          onAutoClose: (t) => {
+            toast.dismiss(t.id);
+            redirect("/");
+          },
 
-        onAutoClose: (t) => {
-          toast.dismiss(t.id);
-          redirect("/");
-        },
-      });
+          classNames: {
+            toast: " bg-red-500 w-full",
+          },
+        }
+      );
     },
     onError: (error) => {
       // An error happened!

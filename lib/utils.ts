@@ -23,6 +23,7 @@ export const signInUser = async (data: SignInDetails) => {
 };
 
 export function handleServerErrors(error: ErrorWithMessageAndStatus) {
+  console.log("error in handleServerErrors", error);
   const customError = {
     message: error.message || "An error occurred",
     statusCode: error.status || 500,

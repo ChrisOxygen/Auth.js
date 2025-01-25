@@ -8,10 +8,14 @@ async function VerificationPage({
   searchParams: Promise<{ code: string }>;
 }) {
   const session = await auth();
+
   const isVerified = session?.user?.isVerified;
   const code = (await searchParams)?.code;
 
-  if (!code || !session) {
+  if (!session) {
+    return redirect(`/sign-in?from=/verify-email?code=${code}`);
+  }
+  if (!code) {
     return redirect("/");
   }
 
@@ -29,17 +33,3 @@ async function VerificationPage({
 }
 
 export default VerificationPage;
-// async function VerificationPage({
-//   params,
-//   searchParams,
-// }: {
-//   params: { slug: string };
-//   searchParams: { [key: string]: string | string[] | undefined };
-// }) {
-//   const paramsRes = await params;
-
-//   console.log("paramsRes: ", paramsRes);
-//   return <div>VerificationPage</div>;
-// }
-
-// export default VerificationPage;

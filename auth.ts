@@ -13,7 +13,7 @@ declare module "next-auth" {
   }
 }
 
-class InvalidLoginError extends CredentialsSignin {
+export class InvalidLoginError extends CredentialsSignin {
   code = "Invalid email or password";
 }
 

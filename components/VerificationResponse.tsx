@@ -92,9 +92,7 @@ function VerificationResponse({
         </div>
       )}
 
-      {isError && (
-        <RegenerateVerificationLink userId={userId} errMsg={error?.message} />
-      )}
+      {isError && <RegenerateVerificationLink errMsg={error?.message} />}
       {isSuccess && (
         <p className=" font-poppins text-lg text-white">
           Your email has been verified

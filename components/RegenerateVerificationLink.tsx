@@ -9,13 +9,7 @@ import { toast } from "sonner";
 import ToastBox from "./ToastBox";
 import { redirect } from "next/navigation";
 
-function RegenerateVerificationLink({
-  userId,
-  errMsg,
-}: {
-  userId: string;
-  errMsg?: string;
-}) {
+function RegenerateVerificationLink({ errMsg }: { errMsg?: string }) {
   const { mutate } = useMutation({
     mutationFn: () => generateAndSendEmailVerificationCode(),
     onSuccess: () => {

@@ -17,7 +17,7 @@ function RegenerateVerificationLink({
   errMsg?: string;
 }) {
   const { mutate } = useMutation({
-    mutationFn: () => generateAndSendEmailVerificationCode(userId),
+    mutationFn: () => generateAndSendEmailVerificationCode(),
     onSuccess: () => {
       toast.custom(
         (t) => {

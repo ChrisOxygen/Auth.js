@@ -8,13 +8,13 @@ import { useSession } from "next-auth/react";
 import { LoadingSpinner } from "./LoadSpinner";
 import { useEffect, useState } from "react";
 
-function NotificationBar() {
+function NotificationBar({ userId }: { userId: string }) {
   const [emailSent, setEmailSent] = useState(false);
   const [isButtonDisabled, setIsButtonDisabled] = useState(false);
   const [remainingTime, setRemainingTime] = useState(0);
   const { data: session } = useSession();
   const { mutate, isPending } = useMutation({
-    mutationFn: () => generateAndSendEmailVerificationCode(),
+    mutationFn: () => generateAndSendEmailVerificationCode(userId),
     onSuccess: () => {
       setEmailSent(true);
       toast.custom(

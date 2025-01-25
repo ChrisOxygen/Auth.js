@@ -14,7 +14,9 @@ export default async function Home() {
   //grid h-full grid-rows-[60px,1fr]
   return (
     <div className="flex flex-col w-full h-screen">
-      {isLoggedIn && !isVerified && <NotificationBar />}
+      {isLoggedIn && !isVerified && (
+        <NotificationBar userId={session.user.id} />
+      )}
       <div
         className=" grid h-full p-5 "
         style={{

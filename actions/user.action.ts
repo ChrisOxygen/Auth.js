@@ -12,12 +12,22 @@ import { auth, signIn, unstable_update } from "@/auth";
 import verificationCodeModel from "@/database/models/verificationCode.model";
 import { revalidatePath } from "next/cache";
 import PasswordCodeModel from "@/database/models/passwordCode.model";
+import { redirect } from "next/navigation";
 
-export const generateAndSendEmailVerificationCode = async (
-  userId: string
-): Promise<{ succes: boolean } | null | undefined> => {
+export const generateAndSendEmailVerificationCode = async (): Promise<
+  { succes: boolean } | null | undefined
+> => {
   try {
+    const session = await auth();
+
+    if (!session) {
+      redirect("/sign-in");
+    }
+
+    const userId = session.user.id;
     connectToDatabase();
+
+    console.log("userId", userId);
 
     const newUser = await UserModel.findById(userId);
 
@@ -116,9 +126,7 @@ export const signUp = async (signupDetails: SignUpDetails) => {
 
     // create verification code
 
-    const newVcode = await generateAndSendEmailVerificationCode(
-      newUser._id.toString()
-    );
+    const newVcode = await generateAndSendEmailVerificationCode();
 
     if (!newVcode) {
       const error = new Error() as ErrorWithMessageAndStatus;

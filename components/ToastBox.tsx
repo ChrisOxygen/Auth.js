@@ -60,10 +60,11 @@ function ToastBox({ variant, title, message, handleClose }: ToastBoxProps) {
       <span
         className={clsx(
           " w-full block h-full  absolute bg-gradient-to-b z-[1] ",
-          variantProp.mainColor === "green" && "from-green-500/20",
-          variantProp.mainColor === "yellow" && "from-yellow-500/20",
-          variantProp.mainColor === "blue" && "from-blue-500/20",
-          variantProp.mainColor === "red" && "from-red-500/20"
+          variantProp.mainColor === "green" && "from-green-500/20 to-slate-950",
+          variantProp.mainColor === "yellow" &&
+            "from-yellow-500/20 to-slate-950",
+          variantProp.mainColor === "blue" && "from-blue-500/20 to-slate-950",
+          variantProp.mainColor === "red" && "from-red-500/20 to-slate-950"
         )}
       ></span>
       <div className="p-5 relative z-10 grid grid-cols-[32px_1fr_28px] items-start gap-3">

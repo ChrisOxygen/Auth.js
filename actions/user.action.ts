@@ -13,7 +13,6 @@ import verificationCodeModel from "@/database/models/verificationCode.model";
 import { revalidatePath } from "next/cache";
 import PasswordCodeModel from "@/database/models/passwordCode.model";
 
-
 export const generateAndSendEmailVerificationCode = async (
   userId: string
 ): Promise<{ succes: boolean } | null | undefined> => {
@@ -308,6 +307,83 @@ export const generateAndSendPasswordResetCode = async (email: string) => {
     return newVcode && emailResponse.ok
       ? JSON.parse(JSON.stringify({ success: true }))
       : null;
+  } catch (error) {
+    handleServerErrors(error as ErrorWithMessageAndStatus);
+  }
+};
+
+export const SetNewPassword = async (setPasswordValues: {
+  code: string;
+  email: string;
+  newPassword: string;
+}) => {
+  const { code, email, newPassword } = setPasswordValues;
+
+  try {
+    connectToDatabase();
+
+    const user = await UserModel.findOne({ email });
+
+    if (!user) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "User not found!";
+      error.status = 404;
+      throw error;
+    }
+
+    console.log("user", user);
+
+    const passwordCode = await PasswordCodeModel.findOne({
+      userId: user._id.toString(),
+    });
+
+    if (!passwordCode) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Invalid password reset code!";
+      error.status = 400;
+      throw error;
+    }
+
+    console.log("passwordCode", passwordCode);
+
+    const isMatch = await bcrypt.compare(code, passwordCode.hashedCode);
+
+    if (!isMatch) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Invalid password reset code!";
+      error.status = 400;
+      throw error;
+    }
+
+    const timeOut =
+      new Date().getTime() - new Date(passwordCode.createdAt!).getTime() >
+      1000 * 60 * 10;
+
+    if (timeOut) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Password reset code expired!";
+      error.status = 400;
+      throw error;
+    }
+
+    await passwordCode.deleteOne({
+      userId: user._id.toString(),
+    });
+
+    const hashedPw = await bcrypt.hash(newPassword, 12);
+
+    if (!hashedPw) {
+      const error = new Error() as ErrorWithMessageAndStatus;
+      error.message = "Password hashing failed!";
+      error.status = 500;
+      throw error;
+    }
+
+    await UserModel.findByIdAndUpdate(user._id.toString(), {
+      password: hashedPw,
+    });
+
+    return JSON.parse(JSON.stringify({ success: true }));
   } catch (error) {
     handleServerErrors(error as ErrorWithMessageAndStatus);
   }

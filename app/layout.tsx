@@ -28,7 +28,7 @@ export default function RootLayout({
         <NextAuthProvider>
           <ReactQueryProvider>{children}</ReactQueryProvider>
         </NextAuthProvider>
-        <Toaster />
+        <Toaster duration={2500} />
       </body>
     </html>
   );

@@ -4,6 +4,9 @@ import { FiArrowRight } from "react-icons/fi";
 import { FcGoogle } from "react-icons/fc";
 import { TbBrandGithubFilled } from "react-icons/tb";
 
+import { HiOutlineEye } from "react-icons/hi";
+import { HiOutlineEyeOff } from "react-icons/hi";
+
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -27,6 +30,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 // import { signIn } from "@/auth";
 import { toast } from "sonner";
 import ToastBox from "./ToastBox";
+import { useState } from "react";
 
 const signUpDefaultValues = {
   firstName: "",
@@ -78,6 +82,7 @@ const authFormSchema = (formType: "sign in" | "sign up") => {
 };
 
 function AuthForm({ formType }: AuthFormProps) {
+  const [showPassword, setShowPassword] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { mutate, isPending } = useMutation({
@@ -318,15 +323,28 @@ function AuthForm({ formType }: AuthFormProps) {
                     control={form.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="relative">
                         <FormControl>
                           <Input
                             className="py-[26px] !bg-[#3C364C] text-lg active:outline focus-visible:outline outline-[#6D54B5] border-none   focus:outline-[#6D54B5] active:bg:[#3C364C] focused:bg:[#3C364C]"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Password"
                             {...field}
                           />
                         </FormControl>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowPassword((prev) => !prev);
+                          }}
+                          className=" !m-0 absolute top-0 right-0 w-14 h-full bg-transparent text-white/40 hover:text-[#6D54B5] grid place-items-center rounded-lg p-1 text-3xl"
+                        >
+                          {showPassword ? (
+                            <HiOutlineEyeOff />
+                          ) : (
+                            <HiOutlineEye />
+                          )}
+                        </button>
 
                         <FormMessage />
                       </FormItem>
@@ -357,15 +375,28 @@ function AuthForm({ formType }: AuthFormProps) {
                     control={form.control}
                     name="password"
                     render={({ field }) => (
-                      <FormItem>
+                      <FormItem className="relative">
                         <FormControl>
                           <Input
                             className="py-[26px] !bg-[#3C364C] text-lg active:outline focus-visible:outline outline-[#6D54B5] border-none   focus:outline-[#6D54B5] active:bg:[#3C364C] focused:bg:[#3C364C]"
-                            type="password"
+                            type={showPassword ? "text" : "password"}
                             placeholder="Password"
                             {...field}
                           />
                         </FormControl>
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            setShowPassword((prev) => !prev);
+                          }}
+                          className=" !m-0 absolute top-0 right-0 w-14 h-full bg-transparent text-white/40 hover:text-[#6D54B5] grid place-items-center rounded-lg p-1 text-3xl"
+                        >
+                          {showPassword ? (
+                            <HiOutlineEyeOff />
+                          ) : (
+                            <HiOutlineEye />
+                          )}
+                        </button>
 
                         <FormMessage />
                       </FormItem>
